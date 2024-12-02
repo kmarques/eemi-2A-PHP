@@ -1,0 +1,24 @@
+Verbes HTTP: GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS/TRACE/CONNECT
+
+URL: https://www.google.com/search?q=test&sourceid=chrome&ie=UTF-8#rso
+    protocol: http/https/file/ftp/sftp/imap/smtp/redis/postgres/mysql/mqtt/rabbitmq/...
+    hostname: www.google.com
+    port: 80/443//21/23/143/465/6379/5432/3306/1883/5672
+    path: /search
+    query params: q=test&sourceid=chrome&ie=UTF-8
+    anchor: #rso
+HTTP_VERSION: HTTP/1.1 HTTP/2
+HEADERS:
+    Accept: application/json
+    Content-Type: application/json   application/x-www-form-urlencoded 
+    Authorization: Basic cm9vdDpwYXNzd29yZA==
+    Max-Age: 
+    ...
+
+
+Exemple Requête HTTP:
+
+VERB URL HTTP_VERSION
+HEADERS
+
+BODY
