@@ -1,7 +1,7 @@
 <?php
 
-// /index.php?action=list-tasks
-// /index.php?action=list-products
+// /index.php?page=list-tasks
+// /index.php?page=list-products
 function index()
 {
     echo "<h1>Welcome to the best website of your life</h1>";
@@ -78,6 +78,7 @@ function listProducts()
 
 
 $action = $_GET["action"] ?? "index";
+
 switch ($action) {
     case "list-tasks":
         listTasks();
@@ -87,5 +88,8 @@ switch ($action) {
         break;
     case "index":
         index();
+        break;
+    default:
+        echo "404";
         break;
 }
