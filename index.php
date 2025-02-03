@@ -54,6 +54,11 @@ function listTasks()
     }
 }
 
+function listTasksFromFile() {
+    $pageTitle = "Liste de tâches";
+    require_once "./tasks/list.php";
+}
+
 function listProducts()
 {
     $products = [
@@ -75,18 +80,24 @@ function listProducts()
     echo "Total: " . $total;
 }
 
+function editTasksFromFile() {
+    require_once "./tasks/edit.php";
+}
 
 
-$action = $_GET["action"] ?? "index";
+$action = $_SERVER['REQUEST_URI'];
 
-switch ($action) {
+switch (substr(strtok($action, '?'), 1)) {
     case "list-tasks":
-        listTasks();
+        listTasksFromFile();
+        break;
+    case "edit-tasks/(?<id>\d+)":
+        editTasksFromFile();
         break;
     case "list-products":
         listProducts();
         break;
-    case "index":
+    case "":
         index();
         break;
     default:

@@ -19,6 +19,13 @@ $tasks = [
 ];
 
 // TP: Algo qui ajoute une nouvelle tâche à la précédente liste de tâches
+if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    $newTaskTitle = trim($_POST['title']);
+    $newTaskAuthor = trim($_POST['author']);
+    $tasks[$newTaskTitle] = [
+        "status" => false, "author" => $newTaskAuthor
+    ];
+}
 
 ?>
 <!DOCTYPE html>
@@ -31,6 +38,11 @@ $tasks = [
 <body>
     <h2>Créer une tâche</h2>
     <!-- Formulaire d'ajout de tâches -->
+    <form action="" method="post">
+        <input name="title" placeholder="Type a title"/>
+        <input name="author" placeholder="Type an author"/>
+        <input type="submit" value="Créer"/>
+    </form>
     
     <table>
         <caption>Liste des tâches</caption>

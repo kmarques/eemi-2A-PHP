@@ -27,14 +27,9 @@ $filteredTasks = array_filter($tasks, function ($taskData) use ($isCompleted, $f
 });
 //$filteredTasks = array_filter($tasks, fn ($taskData) =>  $taskData['status'] === $isCompleted);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Liste de tâches</title>
-</head>
-<body>
+
+
+<?php require_once "./layouts/header.php"; ?>
     <form>
         <h2>Filters</h2>
         <input type="text" placeholder="Search by author" name="author" value="<?= $_GET['author'] ?? '' ?>"/>
@@ -69,5 +64,4 @@ $filteredTasks = array_filter($tasks, function ($taskData) use ($isCompleted, $f
             <?php endif; ?>
         </tbody>
     </table>
-</body>
-</html>
+<?php require_once "./layouts/footer.php"; ?>
