@@ -115,7 +115,6 @@ function actionUpdateProduct(int $productId)
 
     require_once "./views/products/update.php";
 }
-
 function actionDeleteProduct(int $productId)
 {
     require_once "./repositories/product.php";
@@ -125,6 +124,43 @@ function actionDeleteProduct(int $productId)
     } else {
         echo "Failed to delete product {$productId}";
     }
+}
+
+function actionRegister()
+{
+    require_once "./repositories/user.php";
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["email" => $email, "password" => $password] = $_POST;
+        $newProduct = createUser($pdo, [
+            "email" => $email,
+            "password" => password_hash($password, PASSWORD_DEFAULT)
+        ]);
+    }
+
+    require_once "./views/security/index.php";
+}
+function actionLogin()
+{
+    require_once "./repositories/user.php";
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["email" => $email, "password" => $password] = $_POST;
+        $user = login($pdo, [
+            "email" => $email,
+        ]);
+        if (!$user) {
+            echo "Invalid credentials";
+            return;
+        }
+        if (!password_verify($password, $user['password'])) {
+            echo "Invalid credentials";
+            return;
+        }
+        var_dump($user);
+    }
+
+    require_once "./views/security/index.php";
 }
 
 
@@ -139,5 +175,7 @@ match (true) {
     $path ===  "products/create" =>        actionCreateProduct(),
     preg_match("/products\/(?<id>\d+)\/update/", $path, $matches) === 1 => actionUpdateProduct($matches['id']),
     preg_match("/products\/(?<id>\d+)\/delete/", $path, $matches) === 1 => actionDeleteProduct($matches['id']),
+    $path === "register" => actionRegister(),
+    $path === "login" => actionLogin(),
     default => (function () { echo "404"; })(),
 };
