@@ -1,0 +1,16 @@
+services:
+  db:
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+      MYSQL_HOST: "%"
+    ports:
+      - 3306:3306
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:

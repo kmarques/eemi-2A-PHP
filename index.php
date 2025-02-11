@@ -1,5 +1,7 @@
 <?php
 
+require_once "./lib/db.php";
+
 // /index.php?page=list-tasks
 // /index.php?page=list-products
 function index()
@@ -54,8 +56,12 @@ function listTasks()
     }
 }
 
-function listTasksFromFile() {
+function listTasksFromFile()
+{
     $pageTitle = "Liste de tâches";
+
+
+
     require_once "./tasks/list.php";
 }
 
@@ -80,8 +86,24 @@ function listProducts()
     echo "Total: " . $total;
 }
 
-function editTasksFromFile() {
+function editTasksFromFile()
+{
     require_once "./tasks/edit.php";
+}
+
+function actionCreateProduct()
+{
+    require_once "./repositories/product.php";
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["name" => $name, "price" => $price] = $_POST;
+        createProduct($products, [
+            "name" => $name,
+            "price" => $price
+        ]);
+    }
+
+    require_once "./views/products/create.php";
 }
 
 
@@ -93,6 +115,9 @@ switch (substr(strtok($action, '?'), 1)) {
         break;
     case "edit-tasks/(?<id>\d+)":
         editTasksFromFile();
+        break;
+    case "create-product":
+        actionCreateProduct();
         break;
     case "list-products":
         listProducts();
