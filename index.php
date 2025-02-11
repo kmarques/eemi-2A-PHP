@@ -1,7 +1,5 @@
 <?php
 
-require_once "./lib/db.php";
-
 // /index.php?page=list-tasks
 // /index.php?page=list-products
 function index()
@@ -67,23 +65,15 @@ function listTasksFromFile()
 
 function listProducts()
 {
-    $products = [
-        "Banane" => 1.5,
-        "Pomme" => 2,
-        "Poire" => 2.5,
-        "Fraise" => 3
-    ];
+    require_once "./repositories/product.php";
+    $products = fetchProducts($pdo);
 
     $total = 0;
-
-    foreach ($products as $productName => $productPrice) {
-        echo $productName . " "
-            . $productPrice
-            . "<br>";
-        $total += $productPrice;
+    foreach ($products as $product) {
+        $total += $product['price'];
     }
 
-    echo "Total: " . $total;
+    require_once "./views/products/index.php";
 }
 
 function editTasksFromFile()
@@ -97,7 +87,7 @@ function actionCreateProduct()
 
     if ($_SERVER['REQUEST_METHOD'] === "POST") {
         ["name" => $name, "price" => $price] = $_POST;
-        createProduct($products, [
+        $newProduct = createProduct($pdo, [
             "name" => $name,
             "price" => $price
         ]);
@@ -105,27 +95,49 @@ function actionCreateProduct()
 
     require_once "./views/products/create.php";
 }
+function actionUpdateProduct(int $productId)
+{
+    require_once "./repositories/product.php";
+    $product = fetchProduct($pdo, $productId);
+
+    if (!$product) {
+        echo "Product {$productId} not found";
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["name" => $name, "price" => $price] = $_POST;
+        $product = updateProduct($pdo, $productId, [
+            "name" => $name,
+            "price" => $price
+        ]);
+    }
+
+    require_once "./views/products/update.php";
+}
+
+function actionDeleteProduct(int $productId)
+{
+    require_once "./repositories/product.php";
+    $result = deleteProduct($pdo, $productId);
+    if ($result) {
+        echo "Product {$productId} deleted";
+    } else {
+        echo "Failed to delete product {$productId}";
+    }
+}
 
 
 $action = $_SERVER['REQUEST_URI'];
+$path = substr(strtok($action, '?'), 1);
+$matches = [];
 
-switch (substr(strtok($action, '?'), 1)) {
-    case "list-tasks":
-        listTasksFromFile();
-        break;
-    case "edit-tasks/(?<id>\d+)":
-        editTasksFromFile();
-        break;
-    case "create-product":
-        actionCreateProduct();
-        break;
-    case "list-products":
-        listProducts();
-        break;
-    case "":
-        index();
-        break;
-    default:
-        echo "404";
-        break;
-}
+match (true) {
+    $path === "" =>        index(),
+    $path === "list-tasks" => listTasksFromFile(),
+    $path ===  "products" =>        listProducts(),
+    $path ===  "products/create" =>        actionCreateProduct(),
+    preg_match("/products\/(?<id>\d+)\/update/", $path, $matches) === 1 => actionUpdateProduct($matches['id']),
+    preg_match("/products\/(?<id>\d+)\/delete/", $path, $matches) === 1 => actionDeleteProduct($matches['id']),
+    default => (function () { echo "404"; })(),
+};
