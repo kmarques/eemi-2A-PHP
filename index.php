@@ -1,10 +1,19 @@
 <?php
 
+session_start();
+
 // /index.php?page=list-tasks
 // /index.php?page=list-products
 function index()
 {
     echo "<h1>Welcome to the best website of your life</h1>";
+    if (!isset($_SESSION["visited"])) {
+        echo "<br>First time visit";
+        $_SESSION["visited"] = true;
+    }
+    if (isset($_SESSION['user'])) {
+        echo "Hello again, {$_SESSION['user']['email']}";
+    }
 }
 
 function listTasks()
@@ -140,6 +149,12 @@ function actionRegister()
 
     require_once "./views/security/index.php";
 }
+
+function actionLogout()
+{
+    session_destroy();
+}
+
 function actionLogin()
 {
     require_once "./repositories/user.php";
@@ -157,10 +172,19 @@ function actionLogin()
             echo "Invalid credentials";
             return;
         }
-        var_dump($user);
+        $_SESSION["user"] = $user;
     }
 
     require_once "./views/security/index.php";
+}
+
+function protectedRoute(Closure $closure, $roles = ['USER'])
+{
+    if (!isset($_SESSION['user'])) {
+        header('Location: /login');
+    } else {
+        $closure();
+    }
 }
 
 
@@ -171,11 +195,12 @@ $matches = [];
 match (true) {
     $path === "" =>        index(),
     $path === "list-tasks" => listTasksFromFile(),
-    $path ===  "products" =>        listProducts(),
-    $path ===  "products/create" =>        actionCreateProduct(),
-    preg_match("/products\/(?<id>\d+)\/update/", $path, $matches) === 1 => actionUpdateProduct($matches['id']),
-    preg_match("/products\/(?<id>\d+)\/delete/", $path, $matches) === 1 => actionDeleteProduct($matches['id']),
+    $path ===  "products" =>        protectedRoute(fn () => listProducts()),
+    $path ===  "products/create" =>        protectedRoute(fn () => actionCreateProduct(), ['ADMIN']),
+    preg_match("/products\/(?<id>\d+)\/update/", $path, $matches) === 1 => protectedRoute(fn () => actionUpdateProduct($matches['id'])),
+    preg_match("/products\/(?<id>\d+)\/delete/", $path, $matches) === 1 => protectedRoute(function () use ($matches) { actionDeleteProduct($matches['id']);}),
     $path === "register" => actionRegister(),
     $path === "login" => actionLogin(),
+    $path === "logout" => actionLogout(),
     default => (function () { echo "404"; })(),
 };

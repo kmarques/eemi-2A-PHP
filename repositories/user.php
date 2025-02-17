@@ -26,8 +26,8 @@ function login(PDO $pdo, array $credentials): array|false
     $statement = $pdo->prepare("SELECT * FROM users WHERE email = :email");
     $statement->bindParam('email', $credentials['email']);
     $statement->execute();
-
-    return $statement->fetch();
+    $user = $statement->fetch();
+    return $user;
 }
 
 function fetchUsers(PDO $pdo): array
