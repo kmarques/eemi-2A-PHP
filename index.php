@@ -72,6 +72,11 @@ function listTasksFromFile()
     require_once "./tasks/list.php";
 }
 
+function editTasksFromFile()
+{
+    require_once "./tasks/edit.php";
+}
+
 function listProducts()
 {
     require_once "./repositories/product.php";
@@ -84,12 +89,6 @@ function listProducts()
 
     require_once "./views/products/index.php";
 }
-
-function editTasksFromFile()
-{
-    require_once "./tasks/edit.php";
-}
-
 function actionCreateProduct()
 {
     require_once "./repositories/product.php";
@@ -132,6 +131,57 @@ function actionDeleteProduct(int $productId)
         echo "Product {$productId} deleted";
     } else {
         echo "Failed to delete product {$productId}";
+    }
+}
+function listComments()
+{
+    require_once "./repositories/comment.php";
+    $comments = fetchComments($pdo);
+
+    require_once "./views/comments/index.php";
+}
+function actionCreateComment()
+{
+    require_once "./repositories/comment.php";
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["name" => $name, "comment" => $price] = $_POST;
+        $newComment = createComment($pdo, [
+            "name" => $name,
+            "comment" => $price
+        ]);
+    }
+
+    require_once "./views/comments/create.php";
+}
+function actionUpdateComment(int $commentId)
+{
+    require_once "./repositories/comment.php";
+    $comment = fetchComment($pdo, $commentId);
+
+    if (!$comment) {
+        echo "Comment {$commentId} not found";
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        ["name" => $name, "price" => $price] = $_POST;
+        $comment = updateComment($pdo, $commentId, [
+            "name" => $name,
+            "price" => $price
+        ]);
+    }
+
+    require_once "./views/comments/update.php";
+}
+function actionDeleteComment(int $commentId)
+{
+    require_once "./repositories/comment.php";
+    $result = deleteComment($pdo, $commentId);
+    if ($result) {
+        echo "Comment {$commentId} deleted";
+    } else {
+        echo "Failed to delete comment {$commentId}";
     }
 }
 
@@ -178,6 +228,23 @@ function actionLogin()
     require_once "./views/security/index.php";
 }
 
+function actionUpdateProfile()
+{
+    require_once "./repositories/user.php";
+    $user = fetchUser($pdo, $_SESSION['user']['id']);
+
+    if (!$user) {
+        echo "User {$_SESSION['user']['id']} not found";
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === "POST") {
+        $user = updateUser($pdo, $_SESSION['user']['id'], $_POST);
+    }
+
+    require_once "./views/security/profile.php";
+}
+
 function protectedRoute(Closure $closure, $roles = ['USER'])
 {
     if (!isset($_SESSION['user'])) {
@@ -199,8 +266,13 @@ match (true) {
     $path ===  "products/create" =>        protectedRoute(fn () => actionCreateProduct(), ['ADMIN']),
     preg_match("/products\/(?<id>\d+)\/update/", $path, $matches) === 1 => protectedRoute(fn () => actionUpdateProduct($matches['id'])),
     preg_match("/products\/(?<id>\d+)\/delete/", $path, $matches) === 1 => protectedRoute(function () use ($matches) { actionDeleteProduct($matches['id']);}),
+    $path ===  "comments" =>        protectedRoute(fn () => listComments()),
+    $path ===  "comments/create" =>        protectedRoute(fn () => actionCreateComment(), ['ADMIN']),
+    preg_match("/comments\/(?<id>\d+)\/update/", $path, $matches) === 1 => protectedRoute(fn () => actionUpdateComment($matches['id'])),
+    preg_match("/comments\/(?<id>\d+)\/delete/", $path, $matches) === 1 => protectedRoute(function () use ($matches) { actionDeleteComment($matches['id']);}),
     $path === "register" => actionRegister(),
     $path === "login" => actionLogin(),
     $path === "logout" => actionLogout(),
+    $path === "profile" => actionUpdateProfile(),
     default => (function () { echo "404"; })(),
 };

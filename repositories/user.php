@@ -64,8 +64,7 @@ function updateUser(PDO $pdo, int $userId, array $newUserData): ?array
         )
     );
     $statement = $pdo->prepare("UPDATE users SET {$sets} WHERE id = :id");
-    $statement->bindParam('id', $userId);
-    $statement->execute($newUserData);
+    $statement->execute(array_merge(['id' => $userId], $newUserData));
 
     if ($statement->rowCount()) {
         return $pdo->query("SELECT * FROM users WHERE id = {$userId}")->fetch();
